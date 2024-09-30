@@ -63,8 +63,10 @@ type Appointment struct {
 	Title     string         `json:"title" gorm:"not null"`
 	StartTime time.Time      `json:"start_time" gorm:"not null"`
 	EndTime   time.Time      `json:"end_time" gorm:"not null"`
+	Duration  time.Duration  `json:"duration" gorm:"not null"`
 	UserID    uuid.UUID      `json:"user_id" gorm:"type:uuid;not null"`
 	User      User           `json:"user" gorm:"foreignKey:UserID"`
+	AppCode   string         `json:"App_code" gorm:"unique;not null"`
 	CreatedAt time.Time      `json:"created_at"`
 	UpdatedAt time.Time      `json:"updated_at"`
 	DeletedAt gorm.DeletedAt `json:"deleted_at,omitempty" gorm:"index"`
@@ -72,26 +74,29 @@ type Appointment struct {
 
 // AppointmentRequest represents the request payload for creating or updating an appointment.
 type AppointmentRequest struct {
-	Title     string    `json:"title" binding:"required"`
-	StartTime time.Time `json:"start_time" binding:"required"`
-	EndTime   time.Time `json:"end_time" binding:"required"`
-	UserID    uuid.UUID `json:"user_id" binding:"required"`
+	Title     string        `json:"title" binding:"required"`
+	StartTime time.Time     `json:"start_time" binding:"required"`
+	EndTime   time.Time     `json:"end_time" binding:"required"`
+	Duration  time.Duration `json:"duration" gorm:"not null"`
+	UserID    uuid.UUID     `json:"user_id" binding:"required"`
 }
 
 // AppointmentResponse represents the response payload for appointment-related requests.
 type AppointmentResponse struct {
-	ID        uuid.UUID `json:"id"`
-	Title     string    `json:"title"`
-	StartTime time.Time `json:"start_time"`
-	EndTime   time.Time `json:"end_time"`
-	UserID    uuid.UUID `json:"user_id"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
+	ID        uuid.UUID     `json:"id"`
+	Title     string        `json:"title"`
+	StartTime time.Time     `json:"start_time"`
+	EndTime   time.Time     `json:"end_time"`
+	UserID    uuid.UUID     `json:"user_id"`
+	Duration  time.Duration `json:"duration" gorm:"not null"`
+	AppCode   string        `json:"App_code" gorm:"not null"`
+	CreatedAt time.Time     `json:"created_at"`
+	UpdatedAt time.Time     `json:"updated_at"`
 }
 
 // Booking represents a booking for an appointment.
 type Booking struct {
-	ID            uuid.UUID      `json:"id" gorm:"type:uuid;primary_key;default:gen_random_uuid()"`
+	ID            uuid.UUID      `json:"id" gorm:"unique;type:uuid;primary_key;default:gen_random_uuid()"`
 	UserID        uuid.UUID      `json:"user_id" gorm:"type:uuid;not null"`
 	User          User           `json:"user" gorm:"foreignKey:UserID"`
 	AppointmentID uuid.UUID      `json:"appointment_id" gorm:"type:uuid;not null"`

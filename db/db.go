@@ -62,7 +62,7 @@ func ConnectDB() error {
 	return Migrate()
 }
 
-// Migrate function to create tables
+// Migrate function to drop and recreate tables
 func Migrate() error {
 	models := []interface{}{
 		&models.User{},
@@ -70,9 +70,17 @@ func Migrate() error {
 		&models.Booking{},
 	}
 
+	// Drop existing tables
+	for _, model := range models {
+		if err := DB.Migrator().DropTable(model); err != nil {
+			return fmt.Errorf("failed to drop table for %T: %w", model, err)
+		}
+	}
+
+	// Create tables
 	for _, model := range models {
 		if err := DB.AutoMigrate(model); err != nil {
-			return fmt.Errorf("failed to migrate %T: %w", model, err)
+			return fmt.Errorf("failed to create table for %T: %w", model, err)
 		}
 	}
 

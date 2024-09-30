@@ -16,9 +16,28 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Validate required fields
+	var validationErrors []models.ValidationError
+	if userReq.Name == "" {
+		validationErrors = append(validationErrors, models.ValidationError{Field: "name", Message: "Name is required"})
+	}
+	if userReq.Email == "" {
+		validationErrors = append(validationErrors, models.ValidationError{Field: "email", Message: "Email is required"})
+	}
+	if userReq.Password == "" {
+		validationErrors = append(validationErrors, models.ValidationError{Field: "password", Message: "Password is required"})
+	}
+
+	if len(validationErrors) > 0 {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(models.NewValidationErrorResponse(validationErrors...))
+		return
+	}
+
 	user, err := services.CreateUser(userReq)
 	if err != nil {
-		http.Error(w, "Failed to create user", http.StatusInternalServerError)
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(models.NewDatabaseErrorResponse("Failed to create user", err.Error()))
 		return
 	}
 
@@ -27,6 +46,8 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 		Name:  user.Name,
 		Email: user.Email,
 	}
+
+	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(response)
 }
 

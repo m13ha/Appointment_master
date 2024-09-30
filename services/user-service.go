@@ -1,20 +1,25 @@
 package services
 
 import (
-	"github.com/google/uuid"
 	"github.com/m13ha/appointment_master/db"
 	"github.com/m13ha/appointment_master/models"
+	"golang.org/x/crypto/bcrypt"
 )
 
 // CreateUser creates a new user and saves it to the database.
-func CreateUser(req models.UserRequest) (*models.User, error) {
-	user := &models.User{
-		ID:    uuid.UUID{}, // Simulate UUID generation
-		Name:  req.Name,
-		Email: req.Email,
+func CreateUser(userReq models.UserRequest) (*models.User, error) {
+	// Hash the password
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(userReq.Password), bcrypt.DefaultCost)
+	if err != nil {
+		return nil, err
 	}
 
-	// Add user to DB
+	user := &models.User{
+		Name:           userReq.Name,
+		Email:          userReq.Email,
+		HashedPassword: string(hashedPassword),
+	}
+
 	if err := db.DB.Create(user).Error; err != nil {
 		return nil, err
 	}
